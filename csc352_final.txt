@@ -1,0 +1,203 @@
+--Marta Lakomy
+--CSC 352 Final
+
+1. (d)
+2. (d)
+3. (e)
+4. (b)
+5. (a)
+
+-- Part II
+1. 
+SET SERVEROUTPUT ON;
+
+DECLARE
+    emp_sum NUMBER;
+    sal_query VARCHAR2(340) := 'SELECT count(*) FROM employees WHERE salary <= :mini_sal ';
+BEGIN
+
+
+    EXECUTE IMMEDIATE sal_query  INTO emp_sum USING &mini_sal ;
+    dbms_output.put_line(' Number of employees with salary <= input : ' || emp_sum);
+END;
+
+
+----------------------------
+--output:
+
+old:DECLARE
+    emp_sum NUMBER;
+    sal_query VARCHAR2(340) := 'SELECT count(*) FROM employees WHERE salary <= :mini_sal ';
+BEGIN
+
+
+    EXECUTE IMMEDIATE sal_query  INTO emp_sum USING &mini_sal ;
+    dbms_output.put_line(' Number of employees with salary <= 2400 : ' || emp_sum);
+END;
+new:DECLARE
+    emp_sum NUMBER;
+    sal_query VARCHAR2(340) := 'SELECT count(*) FROM employees WHERE salary <= :mini_sal ';
+BEGIN
+
+
+    EXECUTE IMMEDIATE sal_query  INTO emp_sum USING 2400 ;
+    dbms_output.put_line(' Number of employees with salary <= 2400 : ' || emp_sum);
+END;
+
+
+Number of employees with salary <= 2400 : 5
+
+
+PL/SQL procedure successfully completed.
+
+
+2.
+Create or replace procedure emp_info 
+   ( empid     IN   employees.employee_id%TYPE,
+     lastname   OUT  employees.last_name%TYPE,
+     sal   OUT  employees.salary%TYPE,
+     man_id  OUT  employees.manager_id%TYPE
+      
+     )  IS	
+    BEGIN
+        SELECT  employee_id, last_name, salary
+        INTO    empid, lastname, sal
+        FROM    employees 
+        WHERE   employee_id = empid;
+    END emp_info;
+
+DECLARE
+   emp_id     employees.employee_id%TYPE ;
+   sal     employees.salary%TYPE;
+   Cursor  c IS 
+          SELECT    employee_ID, salary INTO emp_id, sal
+          FROM      employees 
+          where     salary <=2400 ;
+BEGIN
+
+     
+         
+     FOR indx in c loop    
+        emp_info ( indx.employee_id ); 
+       -- DBMS_OUTPUT.PUT_LINE
+      --  (RPAD (indx.employee_id, 11)|| RPAD (indx.last_name, 20)|| RPAD (indx.salary, $9999) || RPAD (indx.manager_id, 11));
+     END LOOP;
+END;
+
+
+
+
+
+
+
+--Q3
+Create or replace procedure emp_info 
+   ( empid     IN   employees.employee_id%TYPE,
+     lastname   OUT  employees.last_name%TYPE,
+     sal   OUT  employees.salary%TYPE,
+     deptid  OUT  employees.department_id%TYPE
+      
+     )  IS	
+    BEGIN
+        SELECT  employee_id, last_name, salary
+        INTO    empid, lastname, sal
+        FROM    employees 
+        WHERE   employee_id = empid;
+    END emp_info;
+
+DECLARE
+   emp_id     employees.employee_id%TYPE ;
+   sal     employees.salary%TYPE;
+   Cursor  c IS 
+          SELECT    employee_ID, salary INTO emp_id, sal
+          FROM      employees 
+          where     salary <=2400 ;
+BEGIN
+
+     
+         
+     FOR indx in c loop    
+        emp_info ( indx.employee_id ); 
+       DBMS_OUTPUT.PUT_LINE(RPAD (indx.employee_id, 11)|| RPAD (indx.last_name, 20)|| RPAD (indx.salary, $9999) || RPAD (indx.manager_id, 11));
+     END LOOP;
+END;
+----------------
+
+Procedure EMP_INFO compiled
+
+LINE/COL  ERROR
+--------- -------------------------------------------------------------
+15/1      PLS-00103: Encountered the symbol "DECLARE" 
+19/41     PLS-00103: Encountered the symbol "INTO" when expecting one of the following:     . ( , * @ % & - + / at mod remainder rem <an identifier>    <a double-quoted delimited-identifier> <an exponent (**)> as    from || multiset 
+22/1      PLS-00103: Encountered the symbol "BEGIN" 
+Errors: check compiler log
+
+
+
+--Q4
+CREATE OR REPLACE PACKAGE PKG_DEPT_INFO AS
+
+FUNCTION Dept_Info(
+DEPT_ID IN EMPLOYEES.DepartmentID%TYPE)
+RETURN NUMBER;
+
+FUNCTION Dept_Info(
+DEPT_NAME IN DEPARTMENTS.DEPARTMENT_NAME%TYPE)
+RETURN NUMBER;
+
+
+
+END PKG_DEPT_INFO;
+
+CREATE OR REPLACE PACKAGE BODY PKG_DEPT_INFO AS
+FUNCTION Dept_Info(
+DEPT_ID IN EMPLOYEES.DepartmentID%TYPE)
+RETURN NUMBER
+AS
+RET NUMBER:=0;
+BEGIN
+SELECT COUNT(EMPLOYEE_ID) INTO RET FROM EMPLOYEES WHERE DepartmentID=DEPT_ID;
+RETURN RET;
+END Dept_Info;
+
+FUNCTION Dept_Info(
+DEPT_NAME IN DEPARTMENTS.DEPARTMENT_NAME%TYPE)
+RETURN NUMBER
+AS
+RET NUMBER:=0;
+BEGIN
+SELECT COUNT(e.employee_id) INTO RET
+FROM employees e, departments d
+WHERE e.department_id = d.department_id
+AND d.department_name = DEPT_NAME;
+RETURN RET;
+END Dept_Info;
+
+END PKG_DEPT_INFO;
+-------------------------
+
+Package PKG_DEPT_INFO compiled
+
+LINE/COL  ERROR
+--------- -------------------------------------------------------------
+15/1      PLS-00103: Encountered the symbol "CREATE" 
+Errors: check compiler log
+
+--Q5
+
+CREATE TABLE      emp_log(
+   id employees.employee_id%TYPE,
+   old_sal employees.salary%TYPE,
+   new_sal employees.salary%TYPE,
+   Updated_Date	DATE default SYSDATE,
+   Updated_By	Varchar2 (15) default USER,
+   Action       Varchar2 (30)
+CREATE OR REPLACE TRIGGER emp_change AFTER UPDATE or delete ON employees FOR EACH ROW
+declare
+Updated_Date	DATE default SYSDATE,
+Updated_By	Varchar2 (15) default USER,
+Action       Varchar2 (30)
+BEGIN
+IF UPDATING THEN
+INSERT into Emp_log values(:new.Employee_ID,:old.Salary,:new.Salary ,sysdate,user,'employee change');
+END;

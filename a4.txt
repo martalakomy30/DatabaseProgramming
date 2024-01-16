@@ -1,0 +1,67 @@
+Marta Lakomy 
+CSC 352
+Q1)
+1. T
+2. T
+3. F
+4. T
+5. T
+6. T
+7. T
+
+Q2)
+1. D
+2. D
+
+Q3)
+DECLARE
+counter NUMBER := 100;
+EXCEED_LIMIT EXCEPTION;
+BEGIN
+LOOP
+counter := counter + 5;
+IF counter >= 119 THEN
+RAISE EXCEED_LIMIT;
+END LOOP;
+EXCEPTION
+   WHEN EXCEED_LIMIT THEN
+DBMS_OUTPUT.PUT_LINE('Exception raised, counter limit exceeded. 
+Limit is: 119. Counter is currently: ' || counter || '.');
+End; 
+
+
+Q4)
+DECLARE
+sal employees.salary%type;
+Sal_Below_MIN EXCEPTION;
+
+CURSOR min_emp  IS
+	SELECT salary, employee_id
+	from employees where job_id = 'IT_PROG' &&
+	salary < 5000;
+BEGIN
+OPEN min_emp
+LOOP
+	FETCH min_emp INTO sal
+	If min_emp%FOUND THEN RAISE Sal_Below_MIN;
+END IF;
+
+
+EXCEPTION
+   WHEN Sal_Below_MIN THEN
+DBMS_OUTPUT.PUT_LINE('Exception raised, salary is below the minimum. 
+Minimum salary is: 5000.  Employee ID ' 
+|| sal.employee_id || ' has current salary of ' || sal || '.');
+End; 
+
+Q5)
+DECLARE
+     emp_id employee.employee_id%TYPE;
+BEGIN
+     DELETE FROM employees WHERE employee_id = '104';
+     DELETE FROM employees WHERE employee_id = '123';
+EXCEPTION
+   WHEN OTHERS THEN
+     DBMS_OUTPUT.PUT_LINE ('This Exception Error Code = ' 
+ || SQLCODE || '; Error Message: ' || SQLERRM);
+END;

@@ -1,0 +1,99 @@
+--Marta Lakomy
+--CSC 352 Database Programming
+--Prof Zhang
+--Assignment 2
+set serveroutput on;
+--1
+DECLARE
+dept_id  departments.department_id%TYPE := 777;
+dept_name  departments.department_name%TYPE := 'Deleteme';
+mngr_id departments.manager_id%TYPE := 100;
+loct_id departments.location_id%TYPE := 1700;
+
+BEGIN
+INSERT INTO departments (department_id, department_name, manager_id, location_id)
+VALUES (dept_id, dept_name, mngr_id, loct_id);
+-- same as in SQL
+
+dbms_output.put_line(('New record in Departments = Department ID is ' || dept_id ||  ', Department name is ' || dept_name 
+|| ', Manager ID is ' || mngr_id || ', Location ID is ' || loct_id || '.'));
+
+COMMIT;
+END;
+
+--2
+DECLARE
+dept_id  departments.department_id%TYPE := 777;
+dept_name  departments.department_name%TYPE;
+mngr_id departments.manager_id%TYPE := 100;
+
+BEGIN 
+DELETE FROM departments
+WHERE department_id = dept_id
+RETURNING department_name, manager_id   -- PL/SQL Special
+INTO dept_name, mngr_id;
+DBMS_OUTPUT.put_line(('After DELETION: the record deleted had department_name = '
+||dept_name || ', Manager ID: ' || mngr_id  ||'.'));
+
+COMMIT;
+END;
+--3
+DECLARE
+dept_id  departments.department_id%TYPE := 230;
+mngr_id departments.manager_id%TYPE := 103;
+dept_name  departments.department_name%TYPE := '';
+BEGIN
+UPDATE departments
+SET manager_id = mngr_id
+WHERE department_id = dept_id;
+RETURNING department_name INTO dept_name;
+
+DBMS_OUTPUT.PUT_LINE ('After UPDATE, dept with ID = ' 
+|| dept_id || ', Manager ID changed to ' || mngr_id ||' Dept name is ' 
+|| dept_name ||'.');
+ROLLBACK;
+END;
+
+--4
+DECLARE
+dept_size VARCHAR2(20);
+
+BEGIN
+dept_size = (select count (*) into dept_size 
+from employees where department_ID = 80);
+CASE dept_size
+WHEN >=30 THEN dept_size := 'LARGE';
+WHEN 8>= && <=29 THEN dept_size := 'MEDIUM';
+WHEN <= 7 THEN dept_size := 'SMALL';
+END CASE:
+DBMS_OUTPUT.PUT_LINE('Department with ID 80 is a size ' || dept_size);
+END;
+
+--5 
+DECLARE
+bonus employees.salary%TYPE =1000;
+BEGIN
+SELECT DATEDIFF(year, '2022/01/01', 
+(SELECT hire_date FROM EMPLOYEES WHERE EMPLOYEE_ID = 192)) AS DateDiff; 
+CASE DateDiff
+WHEN >= 25 && <= 27 THEN bonus := 1500;
+WHEN >27 THEN bonus := 1700;
+END CASE;
+SELECT salary from employees where employee_id = 192 AS sal;
+CASE sal
+WHEN >10000 THEN BONUS :+= 1100;
+WHEN >=5000 && <= 10000 THEN BONUS :+= 1000;
+WHEN <5000 THEN BONUS :+= 900;
+DBMS_OUTPUT.PUT_LINE('Bonus for employee 192:  ' || bonus);
+END;
+
+--6
+
+
+--7
+
+
+--8
+
+
+--9

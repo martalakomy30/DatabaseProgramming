@@ -1,0 +1,182 @@
+--Marta Lakomy
+--CSC 352 Database Programming
+--Prof Zhang
+--Assignment 1
+
+--CODE:
+--1
+SELECT employee_id, salary, department_id, CONCAT(CONCAT(last_name, ', '), first_name) AS "Employee Name"
+FROM employees
+WHERE manager_id LIKE '%101';
+
+--2
+SELECT employee_id, salary, department_id, CONCAT(CONCAT(last_name, ', '), first_name) AS "Employee Name"
+FROM employees
+WHERE manager_id LIKE 
+(SELECT employee_id 
+FROM employees 
+where UPPER(last_name) LIKE 'KOCHHAR' AND
+UPPER(first_name) LIKE 'NEENA');
+
+--3
+SELECT employee_id, salary, department_id, CONCAT(CONCAT(last_name, ', '), first_name) AS "Employee Name"
+FROM employees
+WHERE first_name LIKE 'C%';
+
+--4
+SELECT departments.department_id, departments.department_name, count(employees.employee_id) AS count
+FROM departments full outer join employees 
+ON departments.department_id = employees.department_id
+WHERE departments.department_id IS NOT NULL
+GROUP BY departments.department_id, departments.department_name
+HAVING count(employees.employee_id)>0 
+order by count(employees.employee_id) asc
+;
+
+--5
+SELECT CONCAT(CONCAT(last_name, ', '), first_name) AS "Employee Name"
+FROM EMPLOYEES
+WHERE department_id IS NULL;
+
+
+--6
+SELECT department_id, max
+(salary+(commission_pct*salary))
+FROM employees
+WHERE department_id IS NOT NULL
+GROUP BY department_id;
+
+--7
+SELECT employee_id, last_name, first_name, department_id
+FROM EMPLOYEES 
+WHERE last_name IN (SELECT last_name
+FROM EMPLOYEES 
+GROUP BY last_name
+HAVING count(*)>1)
+;
+
+--8
+SELECT departments.department_id, employees.employee_id, employees.last_name, employees.first_name, 
+employees.manager_id, departments.manager_id
+FROM EMPLOYEES RIGHT JOIN departments 
+on employees.department_id = departments.department_id
+WHERE employees.manager_id != departments.manager_id
+AND (departments.department_id = 60 OR  departments.department_id = 70)
+;
+set serveroutput on;
+--9
+DECLARE
+  l_name VARCHAR2(25);
+  sal NUMBER(8,2);
+BEGIN
+  l_name := 'Adams';
+  sal := 5678;
+sal := TO_char(sal, '9999.99');
+  DBMS_OUTPUT.PUT_LINE( l_name || ': $' || sal );
+END;
+
+--10
+DECLARE
+  wabash VARCHAR2(30):= 'Wabash';
+  counter INTEGER(8) := 1;
+BEGIN
+ DECLARE
+ counter INTEGER(8) := 99;
+    BEGIN
+    DBMS_OUTPUT.PUT_LINE( counter || ' ' || counter || ' ' || wabash);
+    END;
+END;
+------------------------------------------------------------------------------------
+
+--OUTPUT:
+
+EMPLOYEE_ID     SALARY DEPARTMENT_ID Employee Name                                  
+----------- ---------- ------------- -----------------------------------------------
+        108      12000           100 Greenberg, Nancy                               
+        200       4400            10 Whalen, Jennifer                               
+        203       6500            40 Mavris, Susan                                  
+        204      10000            70 Baer, Hermann                                  
+        205      12000           110 Higgins, Shelley                               
+
+
+EMPLOYEE_ID     SALARY DEPARTMENT_ID Employee Name                                  
+----------- ---------- ------------- -----------------------------------------------
+        108      12000           100 Greenberg, Nancy                               
+        200       4400            10 Whalen, Jennifer                               
+        203       6500            40 Mavris, Susan                                  
+        204      10000            70 Baer, Hermann                                  
+        205      12000           110 Higgins, Shelley                               
+
+
+EMPLOYEE_ID     SALARY DEPARTMENT_ID Employee Name                                  
+----------- ---------- ------------- -----------------------------------------------
+        142       3100            50 Davies, Curtis                                 
+        179       6200            80 Johnson, Charles                               
+        153       8000            80 Olsen, Christopher                             
+        162      10500            80 Vishney, Clara                                 
+
+
+DEPARTMENT_ID DEPARTMENT_NAME                     COUNT
+------------- ------------------------------ ----------
+           70 Public Relations                        1
+           10 Administration                          1
+           40 Human Resources                         1
+           20 Marketing                               2
+          110 Accounting                              2
+           90 Executive                               3
+           60 IT                                      5
+           30 Purchasing                              6
+          100 Finance                                 6
+           80 Sales                                  34
+           50 Shipping                               45
+
+11 rows selected. 
+
+
+Employee Name                                  
+-----------------------------------------------
+Grant, Kimberely
+
+
+DEPARTMENT_ID MAX(SALARY+(COMMISSION_PCT*SALARY))
+------------- -----------------------------------
+           50                                    
+           40                                    
+          110                                    
+           90                                    
+           30                                    
+           70                                    
+           10                                    
+           20                                    
+           60                                    
+          100                                    
+           80                               19600
+
+11 rows selected. 
+
+
+EMPLOYEE_ID LAST_NAME                 FIRST_NAME           DEPARTMENT_ID
+----------- ------------------------- -------------------- -------------
+        148 Cambrault                 Gerald                          80
+        154 Cambrault                 Nanette                         80
+        178 Grant                     Kimberely                         
+        199 Grant                     Douglas                         50
+        176 Taylor                    Jonathon                        80
+        180 Taylor                    Winston                         50
+        100 King                      Steven                          90
+        156 King                      Janette                         80
+        159 Smith                     Lindsey                         80
+        171 Smith                     William                         80
+
+10 rows selected. 
+
+
+DEPARTMENT_ID EMPLOYEE_ID LAST_NAME                 FIRST_NAME           MANAGER_ID MANAGER_ID
+------------- ----------- ------------------------- -------------------- ---------- ----------
+           60         103 Hunold                    Alexander                   102        103
+           70         204 Baer                      Hermann                     101        204
+
+
+99 99 Wabash
+
+Adams: $5678

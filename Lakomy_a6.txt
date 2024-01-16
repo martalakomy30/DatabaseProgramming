@@ -1,0 +1,266 @@
+--Marta Lakomy
+--Assignment 6
+
+--Q1(a)
+DECLARE
+
+salx number (8,2) ;
+
+commx number (8,2) ;
+
+bonusx number (8,2) ;
+
+Cursor C IS
+   SELECT employee_id from employees where department_id in (60);
+
+
+PROCEDURE emp_bonus ( 
+emp_id IN employees.employee_id%TYPE,
+sal OUT NUMBER,
+comm OUT NUMBER,
+bonus OUT NUMBER
+) IS
+
+   BEGIN
+       SELECT 	salary, NVL (commission_pct, 0) comm_rate
+       INTO     sal,    comm 
+       FROM 	employees 
+       Where    employee_ID = emp_ID; 
+
+    IF comm >= .25 THEN	
+    CASE
+      WHEN sal >= 10000 THEN bonus := 1000;
+      WHEN sal >= 7000 THEN bonus := 800;
+      ELSE bonus := 600;
+      END CASE;
+      
+    ELSIF comm < .25 THEN	
+    CASE
+      WHEN sal >= 10000 THEN bonus := 700;
+      WHEN sal >= 7000 THEN bonus := 600;
+      ELSE bonus := 500;
+      END CASE;
+    ELSE	
+    CASE
+      WHEN sal >= 10000 THEN bonus := 1500;
+      WHEN sal >= 7000 THEN bonus := 1200;
+      ELSE bonus := 1100;
+      END case;
+END IF;
+sal := sal + bonus;
+
+END emp_bonus;
+
+Begin
+   DBMS_OUTPUT.PUT_LINE (' Employee ID  Salary   Commission PCT    Bonus ');
+   DBMS_OUTPUT.PUT_LINE ('------------ --------- -------------- ---------  ');
+   
+   For indx in C LOOP
+       emp_bonus  ( indx.employee_id, salx, commx, bonusx );
+
+    DBMS_OUTPUT.PUT_LINE ( RPAD (indx.employee_id, 12)  ||
+      To_char (salx, '$99,999') || LPAD (commx, 15) || To_char (bonusx, '$99,999') );
+   END loop;
+END;
+
+
+--Q1b
+
+CREATE OR REPLACE PROCEDURE emp_bonus ( 
+emp_id IN employees.employee_id%TYPE,
+sal OUT NUMBER,
+comm OUT NUMBER,
+bonus OUT NUMBER
+) IS
+
+   BEGIN
+       SELECT 	salary, NVL (commission_pct, 0) comm_rate
+       INTO     sal,    comm 
+       FROM 	employees 
+       Where    employee_ID = emp_ID; 
+
+    IF comm >= .25 THEN	
+    CASE
+      WHEN sal >= 10000 THEN bonus := 1000;
+      WHEN sal >= 7000 THEN bonus := 800;
+      ELSE bonus := 600;
+      END CASE;
+      
+    ELSIF comm < .25 THEN	
+    CASE
+      WHEN sal >= 10000 THEN bonus := 700;
+      WHEN sal >= 7000 THEN bonus := 600;
+      ELSE bonus := 500;
+      END CASE;
+    ELSE	
+    CASE
+      WHEN sal >= 10000 THEN bonus := 1500;
+      WHEN sal >= 7000 THEN bonus := 1200;
+      ELSE bonus := 1100;
+      END case;
+END IF;
+sal := sal + bonus;
+END emp_bonus;
+
+--Q1c
+CREATE OR REPLACE FUNCTION emp_bonus ( 
+emp_id IN employees.employee_id%TYPE,
+) RETURN NUMBER
+IS
+   sal NUMBER (8,2); 
+   comm NUMBER (2,2);
+   BEGIN
+       SELECT 	salary, NVL (commission_pct, 0) comm_rate
+       INTO     sal,    comm 
+       FROM 	employees 
+       Where    employee_ID = emp_ID; 
+
+    IF comm >= .25 THEN	
+    CASE
+      WHEN sal >= 10000 THEN bonus := 1000;
+      WHEN sal >= 7000 THEN bonus := 800;
+      ELSE bonus := 600;
+      END CASE;
+      
+    ELSIF comm < .25 THEN	
+    CASE
+      WHEN sal >= 10000 THEN bonus := 700;
+      WHEN sal >= 7000 THEN bonus := 600;
+      ELSE bonus := 500;
+      END CASE;
+    ELSE	
+    CASE
+      WHEN sal >= 10000 THEN bonus := 1500;
+      WHEN sal >= 7000 THEN bonus := 1200;
+      ELSE bonus := 1100;
+      END case;
+END IF;
+sal := sal + bonus;
+RETURN sal;
+END emp_bonus;
+
+
+
+--Q2
+
+Declare
+  TYPE E_bonus IS RECORD
+   ( Emp_id   number (6),
+     Sal      number (8, 2),
+     comm     number (2, 2), 
+     bonus    number (6) ); 
+  
+   v       E_bonus;
+   
+   Function F_Emp_Bonus ( Emp_ID IN number)
+    RETURN E_bonus
+    IS
+   BEGIN
+       SELECT 	salary, NVL (commission_pct, 0) comm_rate
+       INTO     v.sal,    v.comm 
+       FROM 	employees 
+       Where    employee_ID = emp_ID; 
+
+    IF v.comm >= .25 THEN	
+    CASE
+      WHEN v.sal >= 10000 THEN v.bonus := 1000;
+      WHEN v.sal >= 7000 THEN v.bonus := 800;
+      ELSE v.bonus := 600;
+      END CASE;
+      
+    ELSIF v.comm < .25 THEN	
+    CASE
+      WHEN v.sal >= 10000 THEN v.bonus := 700;
+      WHEN v.sal >= 7000 THEN v.bonus := 600;
+      ELSE v.bonus := 500;
+      END CASE;
+    ELSE	
+    CASE
+      WHEN v.sal >= 10000 THEN v.bonus := 1500;
+      WHEN v.sal >= 7000 THEN v.bonus := 1200;
+      ELSE v.bonus := 1100;
+      END case;
+END IF;
+v.sal := v.sal + v.bonus;
+RETURN v;
+  END F_Emp_Bonus ;
+
+Begin
+DBMS_OUTPUT.PUT_LINE (' Employee ID  Salary   Commission PCT    Bonus ');
+   DBMS_OUTPUT.PUT_LINE ('------------ --------- -------------- ---------  ');
+   v.emp_id := 60;
+   F_emp_bonus(v);
+   
+   
+
+    DBMS_OUTPUT.PUT_LINE ( RPAD (v.employee_id, 12)  ||
+      To_char (v.sal, '$99,999') || LPAD (v.comm, 15) || To_char (v.bonus, '$99,999') );
+   END loop;
+End;
+
+--Q3
+
+DECLARE
+    empid      employees.employee_id%TYPE := 100;  
+
+   FUNCTION Emp_Sal 
+     ( emp_id IN employees.employee_id%TYPE)
+       RETURN number
+      IS
+       ret    number (9,2); 	
+   BEGIN
+       SELECT 	salary
+       INTO     ret
+       FROM 	employees 
+       Where    employee_ID = emp_ID; 
+   Return ret;
+   END Emp_Sal ;
+
+   FUNCTION Emp_Sal 
+     ( emp_mail	IN employees.email%TYPE)
+       RETURN number
+      IS
+       ret    number (9,2); 	
+   BEGIN
+       SELECT 	salary
+       INTO     ret
+       FROM 	employees 
+       Where    email = emp_mail; 
+   Return ret;
+   END Emp_Sal ;
+BEGIN
+    
+    DBMS_OUTPUT.PUT_LINE ( 'Employee 100's salary is: ' || emp_sal(100));
+    DBMS_OUTPUT.PUT_LINE ( 'Employee with email SKING's salary is: ' || emp_sal('SKING'));
+END;
+
+--Q4
+Declare
+  TYPE Emp_name IS RECORD
+   ( f_name     VARCHAR2(20),
+     l_name     VARCHAR2(20)); 
+  
+   emp1      Emp_name;
+   emp2      Emp_name;
+   emp3      Emp_name;
+   
+   Function emp_name_eq ( a IN emp_name, b IN emp_name)
+    RETURN boolean
+    IS
+   BEGIN
+   boolean boo := a.f_name LIKE b.emp_name && a.l_name LIKE b.l_name;
+   RETURN boo;
+  END emp_name ;
+
+Begin
+     SELECT 	f_name, l_name
+       INTO     emp1
+       FROM 	employees 
+       Where    employee_id = 202;
+emp2 := emp1;
+emp3.f_name := 'Winston';
+emp3.f_name := 'Taylor';
+boolean ret1 := emp_name_eq(emp1, emp2);
+boolean ret2 :=  emp_name_eq(emp1, emp3);
+DBMS_OUTPUT.PUT_LINE ( 'Result of comparing emp1 and emp2: ' || ret1 || '. Result of comparing emp1 and emp3: '|| ret2 );
+End;

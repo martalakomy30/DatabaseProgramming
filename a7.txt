@@ -1,0 +1,134 @@
+--Marta Lakomy
+--A7
+
+--Q1
+CREATE TABLE      Dept_log(
+   Updated_Date	DATE default SYSDATE,
+   Updated_By	Varchar2 (15) default USER,
+   Action         Varchar2 (30)
+);
+
+CREATE OR REPLACE TRIGGER Dept_Del
+
+AFTER DELETE ON departments
+
+
+BEGIN 
+
+ INSERT INTO Dept_log (Updated_date, Updated_By, Action)
+ VALUES(Sysdate, user, 'Deletion from departments'); 
+
+
+END Dept_Del;
+DROP TRIGGER Dept_Del;
+
+--Q2
+
+DROP table Dept_Del_log;
+
+CREATE TABLE Dept_Del_log (
+   Old_Deptno     number (4),
+   OLD_Deptname   Varchar2 (30),
+   OLD_MgrID      number (6),
+   OLD_LocID      number (4),
+   Updated_Date	DATE,
+   Updated_By	Varchar2 (15),
+   Action         Varchar2 (30)
+);
+
+CREATE OR REPLACE TRIGGER Dept_Del_row
+
+AFTER DELETE ON departments
+FOR EACH ROW
+
+BEGIN 
+
+ INSERT INTO Dept_Del_row VALUES
+
+(:OLD.deptno, :OLD.deptname, :OLD.MgrID, :OLD.LocID, Sysdate, user, 'Deletion from departments');  
+
+END Dept_Del_row;
+DROP TRIGGER Dept_Del_row;
+
+--Q3
+CREATE TABLE      Dept_Access_log(
+   Deptno         number (4);
+   OLD_Deptname   Varchar2 (30);
+   NEW_Deptname   Varchar2 (30);
+   OLD_MgrID      number (6);
+   NEW_MgrID      number (6);
+   OLD_LocID      number (4);
+   NEW_LocID      number (4);
+   Updated_Date	DATE,
+   Updated_By	Varchar2 (15),
+   Action         Varchar2 (30)
+);
+
+
+CREATE OR REPLACE TRIGGER Change_Dept
+
+AFTER INSERT OR UPDATE OR DELETE ON departments
+FOR EACH ROW
+
+BEGIN 
+
+ INSERT INTO Dept_Access_log VALUES
+
+(:OLD.deptno, :OLD.deptname, :OLD.MgrID, :OLD.LocID, Sysdate, user, 'Deletion from departments');  
+
+END Change_Dept;
+DROP TRIGGER Change_Dept;
+
+--Q4
+CREATE OR REPLACE PACKAGE PKG_EMP_SAL AS
+
+FUNCTION EMP_SAL(
+EMP_ID IN EMPLOYEES.EMPLOYEE_ID%TYPE)
+RETURN NUMBER;
+
+FUNCTION EMP_SAL(
+EMP_MAIL IN EMPLOYEES.EMAIL%TYPE)
+RETURN NUMBER;
+
+CREATE OR REPLACE PACKAGE BODY EMP_SAL AS 
+
+
+FUNCTION EMP_SAL(
+ EMP_ID IN EMPLOYEES.EMPLOYEE_ID%TYPE
+ RETURN NUMBER
+AS
+RET NUMBER := 0;
+
+BEGIN
+SELECT salary  into ret
+    FROM   employees WHERE  employee_id = emp_id  ;
+    RETURN ret;
+END EMP_SAL;
+
+
+FUNCTION EMP_SAL(
+ EMP_MAIL IN EMPLOYEES.EMAIL%TYPE
+ RETURN NUMBER
+AS
+RET NUMBER := 0;
+
+BEGIN
+SELECT salary  into ret
+    FROM   employees WHERE  email = emp_mail  ;
+    RETURN ret;
+END EMP_SAL;
+
+BEGIN
+   null;
+END PKG_EMP_SAL;
+
+
+Declare
+sal       number (9,2); 
+sal1       number (9,2); 
+Begin
+sal := pkg_emp_sal.emp_sal(100);
+sal1 := pkg_emp_sal.emp_sal('SKING');
+     DBMS_OUTPUT.PUT_LINE ('The salary of this emp_id 100 is: '|| To_char (sal, '$999,999') ||'.' );
+     DBMS_OUTPUT.PUT_LINE ('The salary of this email SKING is: '|| To_char (sal1, '$999,999') ||'.' );
+End;
